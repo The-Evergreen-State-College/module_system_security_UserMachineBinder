@@ -1,0 +1,13 @@
+###############################################################################
+# Key Value Pair User machine binding database
+# KEY=VALUE
+# Note: value can be either a group or a user.
+# e.g. MyComputer=MyUser
+# e.g. MyComputer=MyGroup
+# examples:
+# Kronos=Worf
+# Earth=Piccard
+# Vulcan=Spock
+###############################################################################
+
+Earth=Piccard
