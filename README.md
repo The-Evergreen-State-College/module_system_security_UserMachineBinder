@@ -1,4 +1,6 @@
+<div align="center">
 <img src="/assets/images/User-machine-Binding-logo.jpg" alt="UMB Logo" width="200" height="300"/>
+</div>
 
 # module_system_security_UserMachineBinder
 
