@@ -10,7 +10,7 @@
 
 .EXAMPLE
     .\module_system_security_UserMachineBinde.ps1
-    Binds the user for the current computer based on UMB-Mapping.txt and revokes rights for users in revoke-UMB.txt.
+    Binds the user for the current computer based on UMB-Mapping.txt and revokes rights for users/groups in revoke-UMB.txt.
 
 .Notes
     Author:		David Geeraerts
@@ -18,8 +18,8 @@
     E-Mail:		dgeeraerts.evergreen@gmail.com
     GitHub:     https://github.com/DavidGeeraerts
     Project:    https://github.com/The-Evergreen-State-College/module_system_security_UserMachineBinder
-    Version:    (Semantic Versioning) http://semver.org/
     License:    GNU GPL v3.0 (https://www.gnu.org/licenses/gpl-3.0.en.html) 
+    Version:    1.0.0   (Semantic Versioning: http://semver.org/)
 
 .LINK
     https://github.com/The-Evergreen-State-College/module_system_security_UserMachineBinder

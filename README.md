@@ -1,5 +1,6 @@
-# module_system_security_UserMachineBinder
+<img src="/assets/images/User-machine-Binding-logo.jpg" alt="UMB Logo" width="200" height="300"/>
 
+# module_system_security_UserMachineBinder
 
 ## :world_map: Purpose
 UMB (User Machine Binder) is an enterprise-minded Windows security module that binds a specific user to a computer adding a layer of security for restricted environments. Though primarily intended for Windows Domain Networks, works just as well for standalone computers using local windows accounts.
