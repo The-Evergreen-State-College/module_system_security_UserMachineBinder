@@ -9,7 +9,7 @@
     Path to the UMB-Mapping.txt file. Defaults to script-relative 'config\UMB-Mapping.txt'.
 
 .EXAMPLE
-    .\module_system_security_UserMachineBinde.ps1
+    .\module_system_security_UserMachineBinder.ps1
     Binds the user for the current computer based on UMB-Mapping.txt and revokes rights for users/groups in revoke-UMB.txt.
 
 .Notes

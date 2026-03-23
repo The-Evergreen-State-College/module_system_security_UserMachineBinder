@@ -24,4 +24,7 @@ Next, UMB uses the Powershell module [Carbon](https://get-carbon.org/) to Config
   - Mitigation: revoke `Users` from `Allow logon locally` privilege.
 - Default Powershell execution policy is restrictive and needs to be configured to allow running scripts
   - `Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope LocalMachine -Force`
+
+
+## :notebook: [Change Log](ChangeLog.md)
  

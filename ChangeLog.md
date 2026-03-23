@@ -1,4 +1,4 @@
-# :notebook:  Change Log: module_system_security_UserMachineBinding
+# :notebook:  Change Log: module_system_security_UserMachineBinder
 
 ## Features Heading
 - `Added` for new features.
