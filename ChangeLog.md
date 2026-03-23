@@ -19,8 +19,12 @@
 
 ---
 
+### Version 1.0.1
+#### Changed
+- rename script name to `module_system_security_UserMachineBinder.ps1`
+
+---
+
 #### Version 1.0.0
 
 - First release
-
----
