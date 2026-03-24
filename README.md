@@ -4,7 +4,7 @@
 
 # module_system_security_UserMachineBinder
 
-## :world_map: Purpose
+## :world_map: About
 UMB (User Machine Binder) is an enterprise-minded Windows security module that binds a specific user to a computer adding a layer of security for restricted environments. Though primarily intended for Windows Domain Networks, works just as well for standalone computers using local windows accounts.
 
 ## :japanese_castle: Security Description
@@ -16,7 +16,7 @@ To manually configure user binding is easy enough using {local, domain} Group Po
 How to dynamically and automate configuration for this setting that enables user machine binding? 
 
 module_system_security_UserMachineBinder (UMB) provides an automated mechanism to dynamically assign a user/group using a key-value-pair file database.
-Next, UMB uses the Powershell module [Carbon](https://get-carbon.org/) to Configure LAS with user right `Allow log on locally`.  
+Next, UMB uses the Powershell module [Carbon](https://get-carbon.org/) to Configure LSA with user right `Allow log on locally`.  
 
 
 ### :gear: How it works
@@ -36,7 +36,11 @@ Next, UMB uses the Powershell module [Carbon](https://get-carbon.org/) to Config
   - Mitigation: revoke `Users` from `Allow logon locally` privilege.
 - Default Powershell execution policy is restrictive and needs to be configured to allow running scripts
   - `Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope LocalMachine -Force`
-
+- [Microsoft recommendations for added LSA protection.](https://learn.microsoft.com/en-us/windows-server/security/credentials-protection-and-management/configuring-additional-lsa-protection)
 
 ### :notebook: [Change Log](ChangeLog.md)
- 
+
+#### :dart: Roadmap
+- [] Logging to file.
+- [] Improved output.
+- [] Create a standalone package for off-line use. 
