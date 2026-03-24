@@ -1,5 +1,5 @@
 <div align="center">
-<img src="/assets/images/User-machine-Binding-logo.jpg" alt="UMB Logo" width="200" height="300"/>
+<img src="/assets/images/User-machine-Binder-logo.jpg" alt="UMB Logo" width="200" height="300"/>
 </div>
 
 # module_system_security_UserMachineBinder
@@ -16,7 +16,7 @@ To manually configure user binding is easy enough using {local, domain} Group Po
 How to dynamically and automate configuration for this setting that enables user machine binding? 
 
 module_system_security_UserMachineBinder (UMB) provides an automated mechanism to dynamically assign a user/group using a key-value-pair file database.
-Next, UMB uses the Powershell module [Carbon](https://get-carbon.org/) to Configure LSA with user right `Allow log on locally`.  
+Next, UMB uses the PowerShell module [Carbon](https://get-carbon.org/) to Configure LSA with user right `Allow log on locally`.  
 
 
 ### :gear: How it works
@@ -34,11 +34,11 @@ Next, UMB uses the Powershell module [Carbon](https://get-carbon.org/) to Config
 ## :thinking: Considerations
 - By default, Domain Group Policy will add `domain users` to the local `Users` group, which in turn by default is configured with `Allow logon locally` privilege, giving all domain users the privilege of console log on.
   - Mitigation: revoke `Users` from `Allow logon locally` privilege.
-- Default Powershell execution policy is restrictive and needs to be configured to allow running scripts
+- Default PowerShell execution policy is restrictive and needs to be configured to allow running scripts
   - `Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope LocalMachine -Force`
 - [Microsoft recommendations for added LSA protection.](https://learn.microsoft.com/en-us/windows-server/security/credentials-protection-and-management/configuring-additional-lsa-protection)
 
-### :notebook: [Change Log](ChangeLog.md)
+## :notebook: [Change Log](ChangeLog.md)
 
 #### :dart: Roadmap
 - [ ] Logging to file.
