@@ -19,6 +19,18 @@ module_system_security_UserMachineBinder (UMB) provides an automated mechanism t
 Next, UMB uses the Powershell module [Carbon](https://get-carbon.org/) to Configure LAS with user right `Allow log on locally`.  
 
 
+### :gear: How it works
+
+#### Step-by-step flow:
+
+    1. Bootstraps dependencies — Installs NuGet, sets PSGallery as trusted, and installs the Carbon PowerShell module if not already present.
+    2. Gets the computer name — Uses $env:COMPUTERNAME to identify the current machine.
+    3. Looks up the assigned user — Reads config\UMB-Mapping.txt, a key-value-pair file (COMPUTERNAME=USERNAME), and finds the entry for the current machine. Exits with an error if the computer isn't listed.
+    4. Grants logon rights — Calls Grant-CPrivilege -Identity $UserName -Privilege SeInteractiveLogonRight to give the bound user the Allow log on locally right.
+    5. Revokes rights for others — Reads config\revoke-UMB.txt (a list of users/groups) and calls Revoke-CPrivilege for each, stripping their logon rights.
+    6. Done — Prints a completion message and exits cleanly.
+
+
 ## :thinking: Considerations
 - By default, Domain Group Policy will add `domain users` to the local `Users` group, which in turn by default is configured with `Allow logon locally` privilege, giving all domain users the privilege of console log on.
   - Mitigation: revoke `Users` from `Allow logon locally` privilege.
@@ -26,5 +38,5 @@ Next, UMB uses the Powershell module [Carbon](https://get-carbon.org/) to Config
   - `Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope LocalMachine -Force`
 
 
-## :notebook: [Change Log](ChangeLog.md)
+### :notebook: [Change Log](ChangeLog.md)
  
