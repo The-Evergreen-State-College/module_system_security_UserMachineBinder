@@ -41,6 +41,6 @@ Next, UMB uses the Powershell module [Carbon](https://get-carbon.org/) to Config
 ### :notebook: [Change Log](ChangeLog.md)
 
 #### :dart: Roadmap
-- [] Logging to file.
-- [] Improved output.
-- [] Create a standalone package for off-line use. 
+- [ ] Logging to file.
+- [ ] Improved output.
+- [ ] Create a standalone package for off-line use. 
