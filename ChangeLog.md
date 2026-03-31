@@ -19,11 +19,22 @@
 
 ---
 
+### Version 1.1.0
+#### Added
+- script metadata
+- error catching for loading Carbon module
+- confirmation message for user privilege
+- run as admin check
+- console messages
+
+#### Changed
+- color output
+
+---
+
 ### Version 1.0.1
 #### Changed
 - rename script name to `module_system_security_UserMachineBinder.ps1`
-
----
 
 #### Version 1.0.0
 

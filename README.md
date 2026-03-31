@@ -44,4 +44,5 @@ Next, UMB uses the PowerShell module [Carbon](https://get-carbon.org/) to Config
 - [ ] Implement [PoShLog](https://www.powershellgallery.com/packages/PoShLog/) logging to log file.
 - [ ] Improve console output.
 - [ ] Improve error checking.
-- [ ] Create a standalone package for off-line use. 
+- [ ] Create a standalone package for off-line use.
+- [ ] Edge case handling. 
