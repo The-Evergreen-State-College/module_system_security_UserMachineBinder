@@ -1,1 +1,13 @@
+# Exclude folders
+
+
+
+# Exclude files
 *.backup
+*.log
+*.tmp
+*.old
+
+
+## Custom UNB mapping file
+config\TESC-UMB-Mapping.txt

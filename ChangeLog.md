@@ -19,6 +19,20 @@
 
 ---
 
+### Version 1.2.0
+#### Added
+- UMB Mapping file as a parameter
+- Banner
+- Checking and validation for computer[Key] 
+- Check for empty User value
+
+#### Changed
+- logic for processing User/group revocation
+- Changed Write-Error to Write-Host for cleaner output
+
+
+---
+
 ### Version 1.1.0
 #### Added
 - script metadata
@@ -29,8 +43,6 @@
 
 #### Changed
 - color output
-
----
 
 ### Version 1.0.1
 #### Changed

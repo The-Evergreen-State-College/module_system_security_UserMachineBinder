@@ -19,7 +19,7 @@
     GitHub:     https://github.com/DavidGeeraerts
     Project:    https://github.com/The-Evergreen-State-College/module_system_security_UserMachineBinder
     License:    GNU GPL v3.0 (https://www.gnu.org/licenses/gpl-3.0.en.html) 
-    Version:    1.1.0   (Semantic Versioning: http://semver.org/)
+    Version:    1.2.0   (Semantic Versioning: http://semver.org/)
 
 .LINK
     https://github.com/The-Evergreen-State-College/module_system_security_UserMachineBinder
@@ -28,19 +28,46 @@
     http://semver.org/
 #>
 
-
 ###############################################################################
 # Requires -RunAsAdministrator
 ###############################################################################
 
+[CmdletBinding()]
+param(
+    [Parameter(Mandatory = $false)]
+    [string]$ConfigFile = (Join-Path -Path $PSScriptRoot -ChildPath 'config\UMB-Mapping.txt')
+)
+
 # Global variables for script metadata
 $SCRIPT_NAME = 'module_system_security_UserMachineBinder'
-$SCRIPT_VERSION = '1.1.0'
-$SCRIPT_BUILD = '20260331'
+$SCRIPT_VERSION = '1.2.0'
+$SCRIPT_BUILD = '20260402'
+
+# User supplied configuration file path, if provided as a parameter
+$UserMachineBinderConfigFilePath = $ConfigFile
+
+# function for banner creation
+function Show-Banner {
+    param(
+        [string]$Step = "Start",
+        [string]$Message = "starting script execution..."
+    )
+    Clear-Host
+    Write-Host "-----------------------------------------------" -ForegroundColor White
+    Write-Host "Name: $SCRIPT_NAME" -ForegroundColor Blue
+    Write-Host "Version: $SCRIPT_VERSION" -ForegroundColor White
+    Write-Host ""
+    Write-Host "Computer: $env:COMPUTERNAME"
+    Write-Host "UMB Config File: $UserMachineBinderConfigFilePath"
+    Write-Host "Step: $Step" -ForegroundColor Cyan
+    Write-Host "-----------------------------------------------" -ForegroundColor White
+    write-Host ""
+    Write-Host "Message: $Message" -ForegroundColor Green
+}
+
 
 # Start of script
-Write-Host "Starting $SCRIPT_NAME version $SCRIPT_VERSION..."
-Write-Host ""
+Show-Banner -Step "Initialization" -Message "Checking for administrator privileges and required dependencies."
 
 # Check if running as administrator
 Write-Host "Checking for administrator privileges..." -ForegroundColor DarkGray
@@ -50,7 +77,8 @@ if (-not ([Security.Principal.WindowsPrincipal]::new([Security.Principal.Windows
     exit 1
 }
 
-Write-Host "Checking dependencies..." -ForegroundColor DarkGray
+Show-Banner -Step "Dependency Check" -Message "Checking for required dependencies and importing modules."
+
 # NuGet package is required for PSGallery
 # Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.
 if (!(Get-PackageProvider -Name NuGet -ErrorAction SilentlyContinue)) { Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.208 -Force }
@@ -77,18 +105,56 @@ try {
 # Get the computer name
 $ComputerName = $env:COMPUTERNAME
 
-# Search for the computer name  in the UserMachineBinder module's configuration file
-$UserMachineBinderConfigFilePath = Join-Path -Path  $PSScriptRoot -ChildPath 'config\UMB-Mapping.txt'
+Show-Banner -Step "Mapping Validation" -Message "Checking if computer:$ComputerName exists in configuration file..."
+
 # If the computer name is not found in the configuration file, throw an error and exit
 if (!(Select-String -Path $UserMachineBinderConfigFilePath -Pattern "$ComputerName" -SimpleMatch -Quiet)) {
-    Write-Error "Computer name '$ComputerName' not found in UserMachineBinder configuration file at '$UserMachineBinderConfigFilePath'. Please add an entry for this computer and try again."
+    Write-Host "Computer name '$ComputerName' not found in UserMachineBinder configuration file at '$UserMachineBinderConfigFilePath'." -ForegroundColor Red
+    Write-Host "Add an entry for this computer and try again." -ForegroundColor Red
     Start-Sleep -Seconds 30
     exit 1
 }
 
-# set the user name variable to the user name found in the configuration file for this computer
-$UserName = (Select-String -Path $UserMachineBinderConfigFilePath -Pattern $ComputerName).Line.Split('=')[1].Trim()
+# Checking for duplicate entries
+# Remove comments and extract keys from the configuration file for validation
+$activeKeys = Get-Content -Path $UserMachineBinderConfigFilePath | 
+    Where-Object { $_ -notmatch '^\s*#' -and $_ -match '\S' } |
+    ForEach-Object {
+        # 2. Extract just the Key (the part before the =)
+        # split by '=' and take the first part [0]
+        $_.Split('=')[0].Trim()
+}
 
+# Check the mapping file for duplicate computer names and throw a warning if duplicates are found
+$DuplicateComputers = $activeKeys | 
+    Group-Object |
+    Where-Object { $_.Count -gt 1 } |
+    Select-Object -ExpandProperty Name
+
+# If duplicates are found, display a warning message with the duplicate computer names
+if ($DuplicateComputers) {
+    Write-Warning "The following computer names appear more than once in the configuration file: $DuplicateComputers"
+}
+
+# If the current computer name is found in the list of duplicates, throw an error and exit to prevent unintended consequences of multiple entries for the same computer
+if ($DuplicateComputers -contains $ComputerName) {
+    Write-Host "The current machine '$env:COMPUTERNAME' is defined multiple times in the configuration file!" -ForegroundColor Red
+    Write-Host "Remove duplicate entries for this computer and try again." -ForegroundColor Red
+    Start-Sleep -Seconds 30
+    exit 1
+}
+
+Show-Banner -Step "Get-Mapping" -Message "Retrieving user/group mapping for computer: $ComputerName from configuration file."
+# set the user name variable to the user name found in the configuration file for this computer
+$UserName = (Select-String -Path $UserMachineBinderConfigFilePath -Pattern $ComputerName -SimpleMatch).Line.Split('=')[1].Trim()
+# check if the user name variable is null or empty and throw an error if it is
+if ([string]::IsNullOrWhiteSpace($UserName)) {
+    Write-Host "User name for computer '$ComputerName' is null or empty in the configuration file!" -ForegroundColor Red
+    Start-Sleep -Seconds 30
+    exit 1
+}
+
+Show-Banner -Step "Granting Logon Rights" -Message "Granting Logon Rights to User/Group for Computer: $ComputerName"
 # Bind the user/group account to the computer account using Carbon's privilege function
 # -Privilege values are case sensitive and must be exactly as defined in the Carbon module's documentation
 Grant-CPrivilege -Identity $UserName -Privilege SeInteractiveLogonRight
@@ -96,11 +162,12 @@ Grant-CPrivilege -Identity $UserName -Privilege SeInteractiveLogonRight
 if (Test-CPrivilege -Identity $UserName -Privilege SeInteractiveLogonRight) {
     Write-Host "User $UserName has been successfully bound to computer $ComputerName. Logon rights have been configured."
     } else {
-    Write-Error "Verification failed: Logon rights were not granted to user '$UserName' on computer '$ComputerName'."
+    Write-Host "Verification failed: Logon rights were not granted to user '$UserName' on computer '$ComputerName'." -ForegroundColor Red
     Start-Sleep -Seconds 30
-    exit 1  # Optional: Exit on failure
+    exit 1 
 }
 
+Show-Banner -Step "Revoking Logon Rights" -Message "Revoking Logon Rights for User/Group Accounts"
 # Revoke the user/group account's log on locally right to prevent local logins
 # Run for loop to revoke the log on locally right for the user/group account
 $RevokeFilePath = Join-Path -Path  $PSScriptRoot -ChildPath 'config\revoke-UMB.txt'
@@ -110,12 +177,27 @@ $RevokeList = Get-Content -Path $RevokeFilePath
 foreach ($Identity in $RevokeList) {
     $Identity = $Identity.Trim()
     if ($Identity) {
+        write-Host "Processing User/Group $Identity..." -ForegroundColor DarkMagenta
         Revoke-CPrivilege -Identity $Identity -Privilege SeInteractiveLogonRight
     }
-    write-Host "User/Group $Identity has been revoked the log on locally right to prevent local logins." -ForegroundColor cyan
 }
 
+# Confirmation loop to verify that the log on locally right has been revoked for each user/group account in the revoke list
+foreach ($Identity in $RevokeList) {
+    $Identity = $Identity.Trim()
+    if (-not $Identity) { continue }
+
+    if (Test-CPrivilege -Identity $Identity -Privilege SeInteractiveLogonRight) {
+        Write-Host "FAILED: '$Identity' still has SeInteractiveLogonRight." -ForegroundColor Red
+        Start-Sleep -Seconds 30
+        exit 1
+    } else {
+        Write-Host "Confirmed: '$Identity' does not have SeInteractiveLogonRight." -ForegroundColor Cyan
+    }
+}
+Start-Sleep 10
+
 # End
-Write-Host "Finished!" -ForegroundColor green
+Show-Banner -Step "Finished" -Message "Completed User-Machine Binding for Computer: $ComputerName to User: $UserName"
 Start-Sleep -Seconds 5
 exit 0
