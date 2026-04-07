@@ -30,6 +30,12 @@ Next, UMB uses the PowerShell module [Carbon](https://get-carbon.org/) to Config
     5. Revokes rights for others — Reads config\revoke-UMB.txt (a list of users/groups) and calls Revoke-CPrivilege for each, stripping their logon rights.
     6. Done — Prints a completion message and exits cleanly.
 
+## :package: Dependencies
+| Dependency | Version | Source | Purpose |
+|---|---|---|---|
+| [Carbon](https://get-carbon.org/) | 2.15.1 | PSGallery | LSA privilege management (`Grant-CPrivilege`, `Revoke-CPrivilege`) |
+
+
 
 ## :thinking: Considerations
 - By default, Domain Group Policy will add `domain users` to the local `Users` group, which in turn by default is configured with `Allow logon locally` privilege, giving all domain users the privilege of console log on.
@@ -37,12 +43,13 @@ Next, UMB uses the PowerShell module [Carbon](https://get-carbon.org/) to Config
 - Default PowerShell execution policy is restrictive and needs to be configured to allow running scripts
   - `Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope LocalMachine -Force`
 - [Microsoft recommendations for added LSA protection.](https://learn.microsoft.com/en-us/windows-server/security/credentials-protection-and-management/configuring-additional-lsa-protection)
+- Carbon bundled with project in the `lib` :file_folder: uncompressed.
 
 ## :notebook: [Change Log](ChangeLog.md)
 
 #### :dart: Roadmap
 - [ ] Implement [PoShLog](https://www.powershellgallery.com/packages/PoShLog/) logging to log file.
-- [ ] Improve console output.
-- [ ] Improve error checking.
-- [ ] Create a standalone package for off-line use.
+- [x] Improve console output.
+- [x] Improve error checking.
+- [x] Create a standalone package for off-line use.
 - [ ] Edge case handling. 

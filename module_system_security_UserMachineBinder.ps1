@@ -19,7 +19,7 @@
     GitHub:     https://github.com/DavidGeeraerts
     Project:    https://github.com/The-Evergreen-State-College/module_system_security_UserMachineBinder
     License:    GNU GPL v3.0 (https://www.gnu.org/licenses/gpl-3.0.en.html) 
-    Version:    1.2.0   (Semantic Versioning: http://semver.org/)
+    Version:    1.3.0   (Semantic Versioning: http://semver.org/)
 
 .LINK
     https://github.com/The-Evergreen-State-College/module_system_security_UserMachineBinder
@@ -40,11 +40,27 @@ param(
 
 # Global variables for script metadata
 $SCRIPT_NAME = 'module_system_security_UserMachineBinder'
-$SCRIPT_VERSION = '1.2.0'
-$SCRIPT_BUILD = '20260402'
+$SCRIPT_VERSION = '1.3.0'
+$SCRIPT_BUILD = '20260407'
 
 # User supplied configuration file path, if provided as a parameter
-$UserMachineBinderConfigFilePath = $ConfigFile
+# Resolve the config file path: if user provided a full path, use it; otherwise, assume it's a filename in config\
+if ($ConfigFile -match '[/\\]') {
+    # Looks like a full path (contains / or \), use as-is
+    $UserMachineBinderConfigFilePath = $ConfigFile
+} else {
+    # Assume it's just a filename, prepend the script-relative config path
+    $UserMachineBinderConfigFilePath = Join-Path -Path $PSScriptRoot -ChildPath "config\$ConfigFile"
+}
+
+# Ensure the config directory exists
+$configDir = Split-Path -Path $UserMachineBinderConfigFilePath -Parent
+if (!(Test-Path -Path $configDir)) {
+    throw "Config directory '$configDir' does not exist. Ensure the config folder is present."
+    Start-Sleep -Seconds 10  # pause for user to read
+    exit 1
+}
+
 
 # function for banner creation
 function Show-Banner {
@@ -77,30 +93,42 @@ if (-not ([Security.Principal.WindowsPrincipal]::new([Security.Principal.Windows
     exit 1
 }
 
-Show-Banner -Step "Dependency Check" -Message "Checking for required dependencies and importing modules."
-
-# NuGet package is required for PSGallery
-# Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.
-if (!(Get-PackageProvider -Name NuGet -ErrorAction SilentlyContinue)) { Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.208 -Force }
-
-# PSGallery is required for Carbon module installation
-if (!(Get-PSRepository -Name PSGallery -ErrorAction SilentlyContinue)) { Set-PSRepository -name PSGallery -InstallationPolicy Trusted }
-
-# Carbon module is required for UserMachineBinder module
-if (!(Get-Module -Name Carbon -ListAvailable)) { Install-Module -Name Carbon -Force }
-
 # Allow running Carbon module scripts
+Write-Host "Ensuring execution policy for current user allows running Carbon module scripts..." -ForegroundColor DarkGray
 if ((Get-ExecutionPolicy) -ne 'RemoteSigned') { Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser -Force }
 
-# Check to see if Carbon is imported, if not import it
-## Carbon is necessary for this script to function, so if it cannot be imported, the script will exit with an error message.
-try {
-    Import-Module -Name Carbon -Force
-} catch {
-    Write-Error "Failed to import the Carbon module. Ensure it is installed and accessible!"
-    Start-Sleep -Seconds 30
-    exit 1
+Show-Banner -Step "Dependency Check" -Message "Checking for required dependencies and importing modules."
+
+# Check for PowerShell version 4.0 or higher, which is required for Carbon module.
+if ($PSVersionTable.PSVersion.Major -lt 4) { throw "Requires PowerShell 4.0 or higher." }
+
+
+$carbonManifest = Join-Path $PSScriptRoot 'lib\Carbon\Carbon.psd1'
+if (Test-Path $carbonManifest) {
+    Write-Host "Loading Carbon from local source: $carbonManifest" -ForegroundColor DarkGray
+    Import-Module $carbonManifest -Force -ErrorAction Stop
 }
+else {
+    Write-Host "Local Carbon not found, installing from PSGallery..." -ForegroundColor Yellow
+    # NuGet package is required for PSGallery
+    # Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.
+    if (!(Get-PackageProvider -Name NuGet -ErrorAction SilentlyContinue)) { Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.208 -Force }
+    # PSGallery is required for Carbon module installation
+    if (!(Get-PSRepository -Name PSGallery -ErrorAction SilentlyContinue)) { Set-PSRepository -name PSGallery -InstallationPolicy Trusted }
+    # Carbon module is required for UserMachineBinder module
+    if (!(Get-Module -Name Carbon -ListAvailable)) { Install-Module -Name Carbon -Force }
+    # Check to see if Carbon is imported, if not import it
+    ## Carbon is necessary for this script to function, so if it cannot be imported, the script will exit with an error message.
+    try {
+        Import-Module -Name Carbon -Force
+    } catch {
+        Write-Error "Failed to import the Carbon module. Ensure it is installed and accessible!"
+        Start-Sleep -Seconds 30
+        exit 1
+    }
+}
+
+
 
 # Get the computer name
 $ComputerName = $env:COMPUTERNAME
@@ -150,6 +178,7 @@ $UserName = (Select-String -Path $UserMachineBinderConfigFilePath -Pattern $Comp
 # check if the user name variable is null or empty and throw an error if it is
 if ([string]::IsNullOrWhiteSpace($UserName)) {
     Write-Host "User name for computer '$ComputerName' is null or empty in the configuration file!" -ForegroundColor Red
+    Write-Host "Ensure there is a valid user name for this computer in the configuration file and try again." -ForegroundColor Yellow
     Start-Sleep -Seconds 30
     exit 1
 }

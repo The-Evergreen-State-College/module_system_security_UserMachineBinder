@@ -19,6 +19,19 @@
 
 ---
 
+
+### Version 1.3.0
+#### Added
+- check config file path
+- condition for config file parameter just as name or path/name
+
+#### Changed
+- Handling of Carbon module. Install bundled.
+
+
+---
+
+
 ### Version 1.2.0
 #### Added
 - UMB Mapping file as a parameter
@@ -29,9 +42,6 @@
 #### Changed
 - logic for processing User/group revocation
 - Changed Write-Error to Write-Host for cleaner output
-
-
----
 
 ### Version 1.1.0
 #### Added
